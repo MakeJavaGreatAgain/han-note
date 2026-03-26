@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="distributionType" value="LOCAL" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/framework" />
+            <option value="$PROJECT_DIR$/framework/common" />
+            <option value="$PROJECT_DIR$/framework/han-note-spring-boot-starter-biz-operationlog" />
+            <option value="$PROJECT_DIR$/han-note-auth" />
+            <option value="$PROJECT_DIR$/platform" />
+          </set>
+        </option>
+        <option name="myGradleHome" value="$USER_HOME$/.sdkman/candidates/gradle/current" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

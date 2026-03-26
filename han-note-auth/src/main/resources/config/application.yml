@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: han-note-auth
+server:
+  port: 8080
