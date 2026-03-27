@@ -12,6 +12,7 @@ tasks.jar {
 
 dependencies {
     implementation(platform(project(":platform")))
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     annotationProcessor(platform(project(":platform")))
     implementation(project(":framework:common"))
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -21,8 +22,11 @@ dependencies {
     implementation("org.projectlombok:lombok")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-    // Mybatis
+    // PostgreSQL
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter")
-    // MySQL驱动
-    runtimeOnly("com.mysql:mysql-connector-j")
+    runtimeOnly("org.postgresql:postgresql")
+    // sa-token
+    implementation("cn.dev33:sa-token-spring-boot4-starter:1.45.0")
+    // 云通短信
+    implementation("com.aliyun:alibabacloud-dypnsapi20170525:2.0.0")
 }
