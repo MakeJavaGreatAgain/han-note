@@ -7,7 +7,7 @@ group = property("group") as String
 version = property("version") as String
 
 tasks.jar {
-    archiveBaseName.set("han-note-spring-boot-starter-biz-operationlog")
+    archiveBaseName.set("han-note-spring-boot-starter-jackson")
 }
 
 dependencies {
@@ -16,14 +16,16 @@ dependencies {
     annotationProcessor(platform(project(":platform")))
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-    implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation(project(":framework:common"))
+    implementation("tools.jackson.core:jackson-core")
+    implementation("tools.jackson.core:jackson-databind")
+    implementation("org.springframework.boot:spring-boot-autoconfigure")
 }
 
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = "han-note-spring-boot-starter-biz-operationlog"
+            artifactId = "han-note-spring-boot-starter-jackson"
             from(components["java"])
         }
     }

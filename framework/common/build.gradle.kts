@@ -1,6 +1,6 @@
 plugins {
-    `java-library`
-    `maven-publish`
+    id("java-library")
+    id("maven-publish")
 }
 
 group = property("group") as String
@@ -12,6 +12,7 @@ tasks.jar {
 
 dependencies {
     implementation(platform(project(":platform")))
+    api("org.springframework.boot:spring-boot-starter-validation")
     compileOnly(platform(project(":platform")))
     annotationProcessor(platform(project(":platform")))
     compileOnly("org.projectlombok:lombok")

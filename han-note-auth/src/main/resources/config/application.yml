@@ -1,5 +1,9 @@
 spring:
   application:
     name: han-note-auth
+  profiles:
+    active: dev
 server:
   port: 8080
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
