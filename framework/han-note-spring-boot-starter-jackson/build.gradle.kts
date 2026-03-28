@@ -11,14 +11,19 @@ tasks.jar {
 }
 
 dependencies {
+    // 平台依赖
     implementation(platform(project(":platform")))
     compileOnly(platform(project(":platform")))
     annotationProcessor(platform(project(":platform")))
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    // lombok依赖
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    // 通用工具依赖
     implementation(project(":framework:common"))
+    // jackson依赖
     implementation("tools.jackson.core:jackson-core")
     implementation("tools.jackson.core:jackson-databind")
+    // spring boot 自动装配依赖
     implementation("org.springframework.boot:spring-boot-autoconfigure")
 }
 

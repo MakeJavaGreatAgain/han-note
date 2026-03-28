@@ -6,17 +6,22 @@ javaPlatform{
     allowDependencies()
 }
 
+val springBoot: String by project
+val springCloud: String by project
+val springCloudAlibaba: String by project
+val hutool: String by project
+val saToken: String by project
+
 dependencies {
-    api(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
-    api(platform("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"))
-    api(platform("com.alibaba.cloud:spring-cloud-alibaba-dependencies:${springCloudAlibabaVersion}"))
-    api(platform("cn.hutool:hutool-all:${hutoolVersion}"))
-    api(platform("cn.dev33:sa-token-dependencies:${saTokenVersion}"))
+    api(platform("org.springframework.boot:spring-boot-dependencies:$springBoot"))
+    api(platform("org.springframework.cloud:spring-cloud-dependencies:$springCloud"))
+    api(platform("com.alibaba.cloud:spring-cloud-alibaba-dependencies:$springCloudAlibaba"))
+    api(platform("cn.hutool:hutool-all:$hutool"))
+    api(platform("cn.dev33:sa-token-dependencies:$saToken"))
     
-    // 常用工具库版本约束
     constraints {
-        api("org.projectlombok:lombok:${lombokVersion}")
-        api("org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisVersion}")
-        api("com.aliyun:alibabacloud-dypnsapi20170525:${aliyunDypnsapiVersion}")
+        api(libs.lombok)
+        api(libs.mybatis.spring.boot.starter)
+        api(libs.aliyun.dypnsapi)
     }
 }

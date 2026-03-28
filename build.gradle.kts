@@ -1,5 +1,5 @@
-plugins{
-    id("org.springframework.boot") version springBootVersion apply false
+plugins {
+    alias(libs.plugins.spring.boot) apply false
 }
 
 allprojects {

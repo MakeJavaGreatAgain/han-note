@@ -11,12 +11,16 @@ tasks.jar {
 }
 
 dependencies {
+    // 平台依赖
     implementation(platform(project(":platform")))
     compileOnly(platform(project(":platform")))
     annotationProcessor(platform(project(":platform")))
+    // lombok依赖
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+    // spring aop依赖
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
+    // 通用工具依赖
     implementation(project(":framework:common"))
 }
 

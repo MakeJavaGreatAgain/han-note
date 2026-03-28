@@ -11,17 +11,21 @@ tasks.jar {
 }
 
 dependencies {
-    implementation(platform(project(":platform")))
+    // 需要传递的依赖
     api("org.springframework.boot:spring-boot-starter-validation")
-    compileOnly(platform(project(":platform")))
-    annotationProcessor(platform(project(":platform")))
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    implementation("tools.jackson.core:jackson-core")
-    implementation("tools.jackson.core:jackson-databind")
     api("com.google.guava:guava")
     api("org.apache.commons:commons-lang3")
     api("cn.hutool:hutool-all")
+    // 平台依赖
+    implementation(platform(project(":platform")))
+    compileOnly(platform(project(":platform")))
+    annotationProcessor(platform(project(":platform")))
+    // lombok依赖
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    // jackson依赖
+    implementation("tools.jackson.core:jackson-core")
+    implementation("tools.jackson.core:jackson-databind")
 }
 
 publishing {

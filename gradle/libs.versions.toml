@@ -1,0 +1,15 @@
+[versions]
+springBoot = "4.0.5"
+
+lombok = "1.18.36"
+mybatis = "4.0.1"
+aliyunDypnsapi = "2.0.0"
+
+[libraries]
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+mybatis-spring-boot-starter = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter", version.ref = "mybatis" }
+mybatis-spring-boot-starter-test = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter-test", version.ref = "mybatis" }
+aliyun-dypnsapi = { module = "com.aliyun:alibabacloud-dypnsapi20170525", version.ref = "aliyunDypnsapi" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
