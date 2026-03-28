@@ -1,5 +1,5 @@
 plugins{
-    id("org.springframework.boot") version "4.0.4" apply false
+    id("org.springframework.boot") version springBootVersion apply false
 }
 
 allprojects {

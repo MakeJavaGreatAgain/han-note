@@ -7,9 +7,16 @@ javaPlatform{
 }
 
 dependencies {
-    api(platform("org.springframework.boot:spring-boot-dependencies:4.0.5"))
-    api(platform("org.springframework.cloud:spring-cloud-dependencies:2025.1.1"))
-    api(platform("com.alibaba.cloud:spring-cloud-alibaba-dependencies:2025.1.0.0"))
-    api(platform("cn.hutool:hutool-all:5.8.44"))
-    api(platform("cn.dev33:sa-token-dependencies:1.45.0"))
+    api(platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}"))
+    api(platform("org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"))
+    api(platform("com.alibaba.cloud:spring-cloud-alibaba-dependencies:${springCloudAlibabaVersion}"))
+    api(platform("cn.hutool:hutool-all:${hutoolVersion}"))
+    api(platform("cn.dev33:sa-token-dependencies:${saTokenVersion}"))
+    
+    // 常用工具库版本约束
+    constraints {
+        api("org.projectlombok:lombok:${lombokVersion}")
+        api("org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisVersion}")
+        api("com.aliyun:alibabacloud-dypnsapi20170525:${aliyunDypnsapiVersion}")
+    }
 }
