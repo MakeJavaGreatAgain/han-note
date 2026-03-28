@@ -3,11 +3,23 @@ spring:
     name: han-note-auth
   profiles:
     active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.1.117:8848
+        namespace: 6274668c-88bc-4fe9-a8b4-5e52063030b2
+        group: DEFAULT_GROUP
+        file-extension: yaml
+        # 鉴权必须配置这两项
+        username: nacos
+        password: nacos
+  config:
+    import:
+      - nacos:han-note-auth-dev.yaml?refreshEnabled=true
 server:
   port: 8080
 mybatis:
   mapper-locations: classpath:mapper/*.xml
-
 ############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
 sa-token:
   # token 名称（同时也是 cookie 名称）
