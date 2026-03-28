@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hanserwei.hannote.auth.domain.mapper.UserRoleRelDOMapper">
+
+    <insert id="insert" parameterType="com.hanserwei.hannote.auth.domain.dataobject.UserRoleRelDO">
+        insert into t_user_role_rel (user_id, role_id, create_time, update_time, deleted)
+        values (#{userId,jdbcType=BIGINT}, #{roleId,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP},
+                #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BOOLEAN});
+    </insert>
+</mapper>

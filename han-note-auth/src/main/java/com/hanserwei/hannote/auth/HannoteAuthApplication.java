@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @MapperScan("com.hanserwei.hannote.auth.domain.mapper")
 @EnableConfigurationProperties({AliyunAccessKeyProperties.class})
 public class HannoteAuthApplication {
-    static void main(String[] args) {
+    public static void main(String[] args) {
         SpringApplication.run(HannoteAuthApplication.class, args);
     }
 }

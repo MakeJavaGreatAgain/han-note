@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hanserwei.hannote.auth.domain.mapper.RoleDOMapper">
+
+    <select id="selectEnabledList" resultType="com.hanserwei.hannote.auth.domain.dataobject.RoleDO">
+        select id, role_name, role_key
+        from t_role
+        where deleted = false
+          and status = 0;
+    </select>
+</mapper>

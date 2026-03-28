@@ -13,6 +13,8 @@ tasks.jar {
 dependencies {
     implementation(platform(project(":platform")))
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1")
+    testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1")
     annotationProcessor(platform(project(":platform")))
     implementation(project(":framework:common"))
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -23,10 +25,10 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     // PostgreSQL
-    implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter")
     runtimeOnly("org.postgresql:postgresql")
     // sa-token
-    implementation("cn.dev33:sa-token-spring-boot4-starter:1.45.0")
+    implementation("cn.dev33:sa-token-spring-boot4-starter")
+    implementation("cn.dev33:sa-token-redis-template")
     // 云通短信
     implementation("com.aliyun:alibabacloud-dypnsapi20170525:2.0.0")
 }
