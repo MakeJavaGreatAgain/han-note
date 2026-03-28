@@ -14,4 +14,20 @@ public interface RoleDOMapper {
      * @return 启用角色列表
      */
     List<RoleDO> selectEnabledList();
+
+    /**
+     * 根据主键查询角色
+     *
+      * @param roleId 角色ID
+     * @return 角色信息
+     */
+    RoleDO selectByPrimaryKey(Long roleId);
+
+    /**
+     * 根据角色ID列表查询角色权限字符列表
+     *
+     * @param roleIdList 角色ID列表
+     * @return 角色权限字符列表
+     */
+    List<String> selectRoleKeyListByIdList(List<Long> roleIdList);
 }

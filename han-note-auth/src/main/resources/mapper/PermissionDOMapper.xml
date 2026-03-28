@@ -3,10 +3,10 @@
 <mapper namespace="com.hanserwei.hannote.auth.domain.mapper.PermissionDOMapper">
 
     <select id="selectAppEnabledList" resultType="com.hanserwei.hannote.auth.domain.dataobject.PermissionDO">
-        select id, ` name `, permission_key
+        select id, name, permission_key
         from t_permission
-        where status = 1
+        where status = 0
           and type = 3
-          and deleted = false;
+          and deleted = false
     </select>
 </mapper>

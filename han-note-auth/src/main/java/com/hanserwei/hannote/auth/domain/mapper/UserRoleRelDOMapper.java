@@ -2,6 +2,8 @@ package com.hanserwei.hannote.auth.domain.mapper;
 
 import com.hanserwei.hannote.auth.domain.dataobject.UserRoleRelDO;
 
+import java.util.List;
+
 /**
  * @author hanserwei
  */
@@ -14,4 +16,12 @@ public interface UserRoleRelDOMapper {
      *                   包括用户ID、角色ID、创建时间、更新时间以及逻辑删除状态
      */
     void insert(UserRoleRelDO userRoleDO);
+
+    /**
+     * 根据用户ID查询用户-角色关系记录
+     *
+     * @param userId 用户ID
+     * @return 用户-角色关系数据对象列表
+     */
+    List<Long> selectByUserId(Long userId);
 }

@@ -79,28 +79,29 @@ public class PushRolePermissions2RedisRunner implements ApplicationRunner {
                 );
                 
                 // 7. 构建最终结果：角色 ID -> 权限对象列表
-                Map<Long, List<PermissionDO>> roleIdToPermissions = Maps.newHashMap();
+                Map<String, List<String>> roleIdToPermissions = Maps.newHashMap();
                 roles.forEach(role -> {
                     Long roleId = role.getId();
+                    String roleKey = role.getRoleKey();
                     // 获取该角色关联的所有权限 ID
                     List<Long> permissionIds = roleIdToPermissionIds.get(roleId);
                     if (CollUtil.isNotEmpty(permissionIds)) {
-                        List<PermissionDO> rolePermissions = Lists.newArrayList();
+                        List<String> permissionKeys = Lists.newArrayList();
                         // 遍历权限 ID，从映射中获取具体的权限对象
                         permissionIds.forEach(permissionId -> {
                             PermissionDO permission = permissionIdToPermission.get(permissionId);
                             // 过滤掉可能不存在的权限数据
                             if (Objects.nonNull(permission)) {
-                                rolePermissions.add(permission);
+                                permissionKeys.add(permission.getPermissionKey());
                             }
                         });
-                        roleIdToPermissions.put(roleId, rolePermissions);
+                        roleIdToPermissions.put(roleKey, permissionKeys);
                     }
                 });
                 
                 // 8. 将每个角色的权限列表序列化并存储到 Redis
-                roleIdToPermissions.forEach((roleId, permissionList) -> {
-                    String key = RedisKeyConstants.buildRolePermissionsKey(roleId);
+                roleIdToPermissions.forEach((roleKey, permissionList) -> {
+                    String key = RedisKeyConstants.buildRolePermissionsKey(roleKey);
                     redisTemplate.opsForValue().set(key, JsonUtils.toJsonString(permissionList));
                 });
             }

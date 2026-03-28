@@ -5,6 +5,13 @@
     <insert id="insert" parameterType="com.hanserwei.hannote.auth.domain.dataobject.UserRoleRelDO">
         insert into t_user_role_rel (user_id, role_id, create_time, update_time, deleted)
         values (#{userId,jdbcType=BIGINT}, #{roleId,jdbcType=BIGINT}, #{createTime,jdbcType=TIMESTAMP},
-                #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BOOLEAN});
+                #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BOOLEAN})
     </insert>
+
+    <select id="selectByUserId" resultType="java.lang.Long">
+        select role_id
+        from t_user_role_rel
+        where user_id = #{userId}
+          and deleted = false
+    </select>
 </mapper>

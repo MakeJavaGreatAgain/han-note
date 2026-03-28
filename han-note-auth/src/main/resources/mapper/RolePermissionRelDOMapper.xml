@@ -8,6 +8,6 @@
         where role_id in
         <foreach item="roleId" collection="roleIds" separator="," open="(" close=")">
             #{roleId}
-        </foreach>;
+        </foreach>
     </select>
 </mapper>

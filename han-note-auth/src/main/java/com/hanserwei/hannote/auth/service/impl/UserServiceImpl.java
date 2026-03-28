@@ -9,8 +9,10 @@ import com.hanserwei.framework.response.Response;
 import com.hanserwei.framework.utils.JsonUtils;
 import com.hanserwei.hannote.auth.constant.RedisKeyConstants;
 import com.hanserwei.hannote.auth.constant.RoleConstants;
+import com.hanserwei.hannote.auth.domain.dataobject.RoleDO;
 import com.hanserwei.hannote.auth.domain.dataobject.UserDO;
 import com.hanserwei.hannote.auth.domain.dataobject.UserRoleRelDO;
+import com.hanserwei.hannote.auth.domain.mapper.RoleDOMapper;
 import com.hanserwei.hannote.auth.domain.mapper.UserDOMapper;
 import com.hanserwei.hannote.auth.domain.mapper.UserRoleRelDOMapper;
 import com.hanserwei.hannote.auth.enums.DeletedEnum;
@@ -41,6 +43,8 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private UserDOMapper userDOMapper;
+    @Resource
+    private RoleDOMapper roleDOMapper;
     @Resource
     private UserRoleRelDOMapper userRoleRelDOMapper;
     @Resource
@@ -81,10 +85,24 @@ public class UserServiceImpl implements UserService {
                 if (Objects.isNull(userDO)) {
                     // 若此用户还没有注册，系统自动注册该用户
                     userId = registerUser(phone);
-
                 } else {
                     // 已注册，则获取其用户 ID
                     userId = userDO.getId();
+                    // 获取并设置用户角色
+                    // 1.查询 redis 是否有该用户的角色信息
+                    String userRolesKey = RedisKeyConstants.buildUserRoleKey(String.valueOf(userId));
+                    Object userRolesObj = redisTemplate.opsForValue().get(userRolesKey);
+                    if (Objects.nonNull(userRolesObj)) {
+                        // 如果 Redis 中有该用户角色信息，可以后续使用
+                        log.info("==> 用户角色信息已存在 Redis 中，userId: {}", userId);
+                        break;
+                    }
+                    log.info("==> 用户角色信息不存在 Redis 中，userId: {}", userId);
+                    List<Long> roleIdList = userRoleRelDOMapper.selectByUserId(userId);
+                    // 根据角色 ID 列表查询角色列表
+                    List<String> roleKeyList = roleDOMapper.selectRoleKeyListByIdList(roleIdList);
+                    // 将用户角色信息存入 Redis 中
+                    redisTemplate.opsForValue().set(userRolesKey, JsonUtils.toJsonString(roleKeyList));
                 }
             }
             case PASSWORD -> {
@@ -143,10 +161,13 @@ public class UserServiceImpl implements UserService {
                         .build();
                 userRoleRelDOMapper.insert(userRoleDO);
 
-                // 将该用户的角色 ID 存入 Redis 中
-                List<Long> roles = Lists.newArrayList();
-                roles.add(RoleConstants.COMMON_USER_ROLE_ID);
-                String userRolesKey = RedisKeyConstants.buildUserRoleKey(phone);
+                RoleDO roleDO = roleDOMapper.selectByPrimaryKey(RoleConstants.COMMON_USER_ROLE_ID);
+
+                // 将该用户的角色 ID 存入 Redis 中，指定初始容量为 1，这样可以减少在扩容时的性能开销
+                List<String> roles = Lists.newArrayListWithCapacity(1);
+                roles.add(roleDO.getRoleKey());
+
+                String userRolesKey = RedisKeyConstants.buildUserRoleKey(String.valueOf(userId));
                 redisTemplate.opsForValue().set(userRolesKey, JsonUtils.toJsonString(roles));
 
                 return userId;

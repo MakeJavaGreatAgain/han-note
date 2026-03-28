@@ -6,6 +6,25 @@
         select id, role_name, role_key
         from t_role
         where deleted = false
-          and status = 0;
+          and status = 0
+    </select>
+
+    <select id="selectByPrimaryKey" resultType="com.hanserwei.hannote.auth.domain.dataobject.RoleDO">
+        select id, role_name, role_key
+        from t_role
+        where id = #{id}
+          and deleted = false
+          and status = 0
+    </select>
+
+    <select id="selectRoleKeyListByIdList" resultType="java.lang.String">
+        select role_key
+        from t_role
+        where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and deleted = false
+        and status = 0
     </select>
 </mapper>
