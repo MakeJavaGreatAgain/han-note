@@ -1,0 +1,17 @@
+package com.hanserwei.hannote.biz.context.config;
+
+import com.hanserwei.hannote.biz.context.filter.HeaderUserId2ContextFilter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.context.annotation.Bean;
+
+/**
+ * @author hanserwei
+ */
+@AutoConfiguration
+public class ContextAutoConfiguration {
+
+    @Bean
+    public HeaderUserId2ContextFilter headerUserId2ContextFilter() {
+        return new HeaderUserId2ContextFilter();
+    }
+}

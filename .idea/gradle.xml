@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/framework" />
             <option value="$PROJECT_DIR$/framework/common" />
+            <option value="$PROJECT_DIR$/framework/han-note-spring-boot-starter-biz-context" />
             <option value="$PROJECT_DIR$/framework/han-note-spring-boot-starter-biz-operationlog" />
             <option value="$PROJECT_DIR$/framework/han-note-spring-boot-starter-jackson" />
             <option value="$PROJECT_DIR$/han-note-auth" />

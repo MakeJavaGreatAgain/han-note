@@ -15,4 +15,11 @@ public interface UserService {
      * @return token令牌
      */
     Response<String> loginAndRegister(UserLoginReqVO userLoginReqVO);
+
+    /**
+     * 登出
+     *
+     * @return 登出结果
+     */
+    Response<?> logout();
 }

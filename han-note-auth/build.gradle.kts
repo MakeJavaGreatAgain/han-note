@@ -27,6 +27,7 @@ dependencies {
     // Internal Projects
     implementation(project(":framework:common"))
     implementation(project(":framework:han-note-spring-boot-starter-biz-operationlog"))
+    implementation(project(":framework:han-note-spring-boot-starter-biz-context"))
     implementation(project(":framework:han-note-spring-boot-starter-jackson"))
 
     // Sa-Token

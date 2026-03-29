@@ -34,7 +34,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
     @NonNull
     public Mono<Void> handle(@NonNull ServerWebExchange exchange, @NonNull Throwable ex) {
         ServerHttpResponse response = exchange.getResponse();
-        log.error("==> 全局异常捕获: ", ex);
+        log.error("==> 全局异常捕获: {}", ex.getMessage());
 
         // 使用 Switch 表达式统一处理异常分支并返回响应结果
         Response<?> result = switch (ex) {

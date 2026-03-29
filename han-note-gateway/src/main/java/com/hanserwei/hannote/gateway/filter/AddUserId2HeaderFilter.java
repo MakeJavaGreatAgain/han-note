@@ -1,5 +1,6 @@
 package com.hanserwei.hannote.gateway.filter;
 
+import cn.dev33.satoken.reactor.context.SaReactorSyncHolder;
 import cn.dev33.satoken.stp.StpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -23,8 +24,9 @@ public class AddUserId2HeaderFilter implements GlobalFilter {
 
     @Override
     @NonNull
-    public Mono<Void> filter(@NonNull ServerWebExchange exchange, GatewayFilterChain chain) {
+    public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull GatewayFilterChain chain) {
         log.info("==================> TokenConvertFilter");
+        SaReactorSyncHolder.setContext(exchange);
         // 用户 ID
         Long userId = null;
         try {
@@ -34,7 +36,7 @@ public class AddUserId2HeaderFilter implements GlobalFilter {
             // 若没有登录，则直接放行
             return chain.filter(exchange);
         }
-        log.info("## 当前登录的用户 ID: {}", userId);
+        log.info("==> 当前登录的用户 ID: {}", userId);
 
         Long finalUserId = userId;
         ServerWebExchange newExchange = exchange.mutate()

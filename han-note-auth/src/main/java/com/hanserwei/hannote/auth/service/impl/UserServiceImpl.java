@@ -21,6 +21,7 @@ import com.hanserwei.hannote.auth.enums.ResponseCodeEnum;
 import com.hanserwei.hannote.auth.enums.StatusEnum;
 import com.hanserwei.hannote.auth.model.vo.user.UserLoginReqVO;
 import com.hanserwei.hannote.auth.service.UserService;
+import com.hanserwei.hannote.biz.context.holer.LoginUserContextHolder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -52,6 +53,12 @@ public class UserServiceImpl implements UserService {
     @Resource
     private TransactionTemplate transactionTemplate;
 
+    /**
+     * 用户登录注册
+     *
+     * @param userLoginReqVO 登录参数
+     * @return Token 令牌
+     */
     @Override
     public Response<String> loginAndRegister(UserLoginReqVO userLoginReqVO) {
         String phone = userLoginReqVO.phone();
@@ -177,5 +184,18 @@ public class UserServiceImpl implements UserService {
                 return null;
             }
         });
+    }
+
+    /**
+     * 用户登出
+     *
+     * @return 是否登出成功
+     */
+    @Override
+    public Response<?> logout() {
+        Long userId = LoginUserContextHolder.getUserId();
+        // 退出登录 (指定用户 ID)
+        StpUtil.logout(userId);
+        return Response.success();
     }
 }
