@@ -10,6 +10,10 @@ tasks.jar {
     archiveBaseName.set("han-note-oss-biz")
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     // Platform
     implementation(platform(project(":platform")))
@@ -21,6 +25,12 @@ dependencies {
     implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery")
     // Internal Projects
     implementation(project(":framework:common"))
+
+    // AWS SDK (用于 Rustfs)
+    implementation(libs.awssdk)
+
+    // Aliyun OSS SDK
+    implementation(libs.aliyun.oss)
 
     // Lombok
     implementation(libs.lombok)
