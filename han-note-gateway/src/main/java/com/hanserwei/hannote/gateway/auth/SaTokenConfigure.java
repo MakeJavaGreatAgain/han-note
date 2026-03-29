@@ -1,9 +1,11 @@
 package com.hanserwei.hannote.gateway.auth;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import cn.dev33.satoken.util.SaResult;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,7 +41,14 @@ public class SaTokenConfigure {
 
                     // 更多匹配 ...
                 })
-                // 异常处理方法：每次 setAuth 函数出现异常时进入
-                .setError(e -> SaResult.error(e.getMessage()));
+                // 异常处理方法：每次setAuth函数出现异常时进入
+                .setError(e -> {
+                    throw switch (e) {
+                        case NotLoginException nle -> nle;
+                        case NotPermissionException npe -> npe;
+                        case NotRoleException nre -> new NotPermissionException(nre.getMessage());
+                        default -> new RuntimeException(e.getMessage(), e);
+                    };
+                });
     }
 }

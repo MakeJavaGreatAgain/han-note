@@ -27,6 +27,7 @@ dependencies {
 
     // Inner
     implementation(project(":framework:common"))
+    implementation(project(":framework:han-note-spring-boot-starter-jackson"))
 
     // Lombok
     implementation(libs.lombok)
