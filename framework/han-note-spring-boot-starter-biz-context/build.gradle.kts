@@ -21,8 +21,6 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     // 通用工具依赖
     implementation(project(":framework:common"))
-    // TransmittableThreadLocal
-    implementation("com.alibaba:transmittable-thread-local:2.14.5")
 }
 
 publishing {

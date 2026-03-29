@@ -1,61 +1,57 @@
 package com.hanserwei.hannote.biz.context.holer;
 
-import com.alibaba.ttl.TransmittableThreadLocal;
-import com.hanserwei.framework.constant.GlobalConstants;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 /**
  * 登录用户上下文持有者
  * <p>
- * 利用 ThreadLocal 机制，在当前线程中存储用户信息，实现用户信息在逻辑层级间的透明传递。
+ * 利用 JDK {@link ScopedValue} 机制，在当前作用域中存储用户信息，实现用户信息在逻辑层级间的透明传递。
  * 避免了在方法调用链中频繁传递用户 ID 等参数。
+ * <p>
+ * 与 ThreadLocal 不同，ScopedValue 是不可变的且与作用域绑定，作用域结束后自动释放，
+ * 不存在内存泄漏和线程间串户的风险。在结构化并发（{@code StructuredTaskScope}）中，
+ * ScopedValue 会自动传播到子线程。
  *
  * @author hanserwei
  */
 public class LoginUserContextHolder {
 
     /**
-     * 初始化 ThreadLocal 变量
-     * <p>
-     * 初始值为一个空的 HashMap，用于存放当前线程相关的上下文数据
+     * 存储当前登录用户 ID 的 ScopedValue
      */
-    private static final ThreadLocal<Map<String, Object>> LOGIN_USER_CONTEXT_THREAD_LOCAL
-            = TransmittableThreadLocal.withInitial(HashMap::new);
+    private static final ScopedValue<Long> USER_ID_SCOPED_VALUE = ScopedValue.newInstance();
 
     /**
-     * 将用户 ID 设置到当前线程上下文中
+     * 在指定用户 ID 的作用域内执行操作（支持受检异常）
+     * <p>
+     * 用于 Servlet Filter 等需要抛出受检异常的场景。
      *
-     * @param value 用户 ID (通常为 Long 或 String 类型)
+     * @param userId 用户 ID
+     * @param op     要执行的操作
+     * @param <R>    返回值类型
+     * @param <X>    异常类型
+     * @return op 的返回值
+     * @throws X op 抛出的异常
      */
-    public static void setUserId(Object value) {
-        LOGIN_USER_CONTEXT_THREAD_LOCAL.get().put(GlobalConstants.USER_ID, value);
+    public static <R, X extends Throwable> R callWithUserId(Long userId, ScopedValue.CallableOp<R, X> op) throws X {
+        return ScopedValue.where(USER_ID_SCOPED_VALUE, userId).call(op);
     }
 
     /**
-     * 从当前线程上下文中获取用户 ID
+     * 在指定用户 ID 的作用域内执行操作
      *
-     * @return 转换后的 Long 型用户 ID；如果上下文中不存在，则返回 null
+     * @param userId   用户 ID
+     * @param runnable 要执行的操作
+     */
+    public static void runWithUserId(Long userId, Runnable runnable) {
+        ScopedValue.where(USER_ID_SCOPED_VALUE, userId).run(runnable);
+    }
+
+    /**
+     * 从当前作用域中获取用户 ID
+     *
+     * @return 用户 ID；如果当前不在绑定作用域内，则返回 null
      */
     public static Long getUserId() {
-        Object value = LOGIN_USER_CONTEXT_THREAD_LOCAL.get().get(GlobalConstants.USER_ID);
-        if (Objects.isNull(value)) {
-            return null;
-        }
-        // 使用 toString() 配合 Long.valueOf()，增加对不同输入类型的容错性
-        return Long.valueOf(value.toString());
-    }
-
-    /**
-     * 移除当前线程的所有上下文数据
-     * <p>
-     * <b>重要：</b>由于在高并发场景下，线程通常由线程池管理（会被重用），
-     * 请求结束前必须调用此方法，否则可能导致【内存泄漏】或【用户信息串户】。
-     */
-    public static void remove() {
-        LOGIN_USER_CONTEXT_THREAD_LOCAL.remove();
+        return USER_ID_SCOPED_VALUE.isBound() ? USER_ID_SCOPED_VALUE.get() : null;
     }
 
 }

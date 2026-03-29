@@ -14,8 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
+ * 提取请求头中的用户 ID 并绑定到 ScopedValue 作用域中，以方便后续使用
+ *
  * @author hanserwei
- * 提取请求头中的用户 ID 保存到上下文中，以方便后续使用
  */
 @Slf4j
 public class HeaderUserId2ContextFilter extends OncePerRequestFilter {
@@ -37,16 +38,22 @@ public class HeaderUserId2ContextFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 如果 header 中存在 userId，则设置到 ThreadLocal 中
-        log.info("=====> 设置 userId 到 ThreadLocal 中， 用户 ID: {}", userId);
-        LoginUserContextHolder.setUserId(userId);
+        // 如果 header 中存在 userId，则绑定到 ScopedValue 作用域中
+        log.info("=====> 绑定 userId 到 ScopedValue 作用域， 用户 ID: {}", userId);
+        Long userIdLong = Long.valueOf(userId);
 
         try {
-            chain.doFilter(request, response);
-        } finally {
-            // 一定要删除 ThreadLocal ，防止内存泄露
-            LoginUserContextHolder.remove();
-            log.info("=====> 删除 ThreadLocal， userId: {}", userId);
+            // ScopedValue 作用域结束后自动释放，无需手动 remove，不存在内存泄漏风险
+            LoginUserContextHolder.callWithUserId(userIdLong, () -> {
+                chain.doFilter(request, response);
+                return null;
+            });
+        } catch (ServletException | IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ServletException("Unexpected exception in scoped value context", e);
         }
+
+        log.info("=====> ScopedValue 作用域结束， userId: {}", userId);
     }
 }
