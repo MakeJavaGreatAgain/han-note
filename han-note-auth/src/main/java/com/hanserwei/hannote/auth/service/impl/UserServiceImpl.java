@@ -1,9 +1,7 @@
 package com.hanserwei.hannote.auth.service.impl;
 
-import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.hanserwei.framework.exception.BizException;
 import com.hanserwei.framework.response.Response;
 import com.hanserwei.framework.utils.JsonUtils;
@@ -31,11 +29,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author hanserwei
@@ -58,95 +56,102 @@ public class UserServiceImpl implements UserService {
     private TransactionTemplate transactionTemplate;
 
     /**
-     * 用户登录注册
-     *
-     * @param userLoginReqVO 登录参数
-     * @return Token 令牌
+     * 用户登录注册入口
      */
     @Override
-    public Response<String> loginAndRegister(UserLoginReqVO userLoginReqVO) {
-        String phone = userLoginReqVO.phone();
-        Integer loginType = userLoginReqVO.type();
-
-        LoginTypeEnum typeEnum = LoginTypeEnum.valueOf(loginType);
-
-        Long userId = null;
-
-        Assert.notNull(typeEnum, "登录方式不能为空！");
-        switch (typeEnum) {
-            case VERIFICATION_CODE -> {
-                String verificationCode = userLoginReqVO.code();
-                Preconditions.checkArgument(StringUtils.isNotBlank(verificationCode), "验证码不能为空");
-                // 构建验证码 Redis Key
-                String key = RedisKeyConstants.buildVerificationCodeKey(phone);
-                // 查询存储在 Redis 中该用户的登录验证码
-                String sentCode = (String) redisTemplate.opsForValue().get(key);
-
-                // 判断用户提交的验证码，与 Redis 中的验证码是否一致
-                if (!Strings.CS.equals(verificationCode, sentCode)) {
-                    throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_ERROR);
-                }
-
-                // 通过手机号查询记录
-                UserDO userDO = userDOMapper.selectByPhone(phone);
-
-                log.info("==> 用户是否注册, phone: {}, userDO: {}", phone, JsonUtils.toJsonString(userDO));
-
-                // 判断是否注册
-                if (Objects.isNull(userDO)) {
-                    // 若此用户还没有注册，系统自动注册该用户
-                    userId = registerUser(phone);
-                } else {
-                    // 已注册，则获取其用户 ID
-                    userId = userDO.getId();
-                    // 获取并设置用户角色
-                    // 1.查询 redis 是否有该用户的角色信息
-                    String userRolesKey = RedisKeyConstants.buildUserRoleKey(String.valueOf(userId));
-                    Object userRolesObj = redisTemplate.opsForValue().get(userRolesKey);
-                    if (Objects.nonNull(userRolesObj)) {
-                        // 如果 Redis 中有该用户角色信息，可以后续使用
-                        log.info("==> 用户角色信息已存在 Redis 中，userId: {}", userId);
-                        break;
-                    }
-                    log.info("==> 用户角色信息不存在 Redis 中，userId: {}", userId);
-                    List<Long> roleIdList = userRoleRelDOMapper.selectByUserId(userId);
-                    // 根据角色 ID 列表查询角色列表
-                    List<String> roleKeyList = roleDOMapper.selectRoleKeyListByIdList(roleIdList);
-                    // 将用户角色信息存入 Redis 中
-                    redisTemplate.opsForValue().set(userRolesKey, JsonUtils.toJsonString(roleKeyList));
-                }
-            }
-            case PASSWORD -> {
-
-            }
-
-            default -> {
-
-            }
+    public Response<String> loginAndRegister(UserLoginReqVO vo) {
+        LoginTypeEnum typeEnum = LoginTypeEnum.valueOf(vo.type());
+        if (Objects.isNull(typeEnum)) {
+            throw new BizException(ResponseCodeEnum.LOGIN_TYPE_ERROR);
         }
 
-        // SaToken 登录用户, 入参为用户 ID
+        // 1. 使用 Java 17 Switch 表达式分流逻辑
+        Long userId = switch (typeEnum) {
+            case VERIFICATION_CODE -> handleVerificationCodeLogin(vo);
+            case PASSWORD -> handlePasswordLogin(vo);
+        };
+
+        // 2. 执行 Sa-Token 登录
         StpUtil.login(userId);
 
-        // 获取 Token 令牌
-        SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
-
-        // 返回 Token 令牌
-        return Response.success(tokenInfo.tokenValue);
+        // 3. 返回 Token
+        return Response.success(StpUtil.getTokenValue());
     }
 
     /**
-     * 用户注册
-     *
-     * @param phone 手机号
-     * @return 用户 ID
+     * 处理：验证码登录/自动注册
+     */
+    private Long handleVerificationCodeLogin(UserLoginReqVO vo) {
+        String phone = vo.phone();
+        String code = vo.code();
+        Preconditions.checkArgument(StringUtils.isNotBlank(code), "验证码不能为空");
+
+        // 校验 Redis 验证码
+        String key = RedisKeyConstants.buildVerificationCodeKey(phone);
+        String sentCode = (String) redisTemplate.opsForValue().get(key);
+        if (!Strings.CS.equals(code, sentCode)) {
+            throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_ERROR);
+        }
+
+        UserDO userDO = userDOMapper.selectByPhone(phone);
+        if (Objects.isNull(userDO)) {
+            // 未注册则走自动注册流程
+            return registerUser(phone);
+        }
+
+        // 已注册用户，确保角色缓存同步
+        syncUserRolesToRedis(userDO.getId());
+        return userDO.getId();
+    }
+
+    /**
+     * 处理：密码登录
+     */
+    private Long handlePasswordLogin(UserLoginReqVO vo) {
+        UserDO userDO = userDOMapper.selectByPhone(vo.phone());
+        if (Objects.isNull(userDO)) {
+            throw new BizException(ResponseCodeEnum.USER_NOT_FOUND);
+        }
+
+        // 密码匹配
+        if (!passwordEncoder.matches(vo.password(), userDO.getPassword())) {
+            throw new BizException(ResponseCodeEnum.PHONE_OR_PASSWORD_ERROR);
+        }
+
+        syncUserRolesToRedis(userDO.getId());
+        return userDO.getId();
+    }
+
+    /**
+     * 核心逻辑提取：同步用户角色到 Redis 缓存
+     * 设置 24 小时过期时间，防止角色权限变动后的“脏数据”永驻
+     */
+    private void syncUserRolesToRedis(Long userId) {
+        String userRolesKey = RedisKeyConstants.buildUserRoleKey(String.valueOf(userId));
+
+        // 如果 Redis 中已经有了，且不考虑立即生效需求，可以直接跳过以节省数据库压力
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(userRolesKey))) {
+            return;
+        }
+
+        log.info("==> 开始同步用户角色至 Redis, userId: {}", userId);
+        List<Long> roleIdList = userRoleRelDOMapper.selectByUserId(userId);
+        List<String> roleKeyList = roleDOMapper.selectRoleKeyListByIdList(roleIdList);
+
+        // 写入缓存并设置 TTL (24小时)
+        redisTemplate.opsForValue().set(userRolesKey, JsonUtils.toJsonString(roleKeyList), 24, TimeUnit.HOURS);
+    }
+
+    /**
+     * 事务化注册新用户
      */
     private Long registerUser(String phone) {
         return transactionTemplate.execute(status -> {
             try {
-                // 获取全局自增的小憨书ID
+                // 1. 生成全局唯一 ID
                 Long hannoteId = redisTemplate.opsForValue().increment(RedisKeyConstants.HANNOTE_ID_GENERATOR_KEY);
 
+                // 2. 创建用户
                 UserDO userDO = UserDO.builder()
                         .phone(phone)
                         .hannoteId(String.valueOf(hannoteId))
@@ -156,13 +161,10 @@ public class UserServiceImpl implements UserService {
                         .updateTime(LocalDateTime.now())
                         .deleted(DeletedEnum.NO.getValue())
                         .build();
-
-                // 入库
                 userDOMapper.insert(userDO);
-                // 获取刚刚添加入库的用户 ID
                 Long userId = userDO.getId();
 
-                // 给该用户分配一个默认角色
+                // 3. 绑定默认角色
                 UserRoleRelDO userRoleDO = UserRoleRelDO.builder()
                         .userId(userId)
                         .roleId(RoleConstants.COMMON_USER_ROLE_ID)
@@ -172,73 +174,61 @@ public class UserServiceImpl implements UserService {
                         .build();
                 userRoleRelDOMapper.insert(userRoleDO);
 
+                // 4. 立即同步角色到 Redis
                 RoleDO roleDO = roleDOMapper.selectByPrimaryKey(RoleConstants.COMMON_USER_ROLE_ID);
-
-                // 将该用户的角色 ID 存入 Redis 中，指定初始容量为 1，这样可以减少在扩容时的性能开销
-                List<String> roles = Lists.newArrayListWithCapacity(1);
-                roles.add(roleDO.getRoleKey());
-
-                String userRolesKey = RedisKeyConstants.buildUserRoleKey(String.valueOf(userId));
-                redisTemplate.opsForValue().set(userRolesKey, JsonUtils.toJsonString(roles));
+                List<String> roles = List.of(roleDO.getRoleKey());
+                redisTemplate.opsForValue().set(RedisKeyConstants.buildUserRoleKey(String.valueOf(userId)),
+                        JsonUtils.toJsonString(roles), 24, TimeUnit.HOURS);
 
                 return userId;
             } catch (Exception e) {
                 status.setRollbackOnly();
-                log.error("==> 系统注册用户异常: ", e);
-                return null;
+                log.error("==> 用户注册事务失败: ", e);
+                throw new BizException(ResponseCodeEnum.SYSTEM_ERROR);
             }
         });
     }
 
-    /**
-     * 用户登出
-     *
-     * @return 是否登出成功
-     */
     @Override
     public Response<?> logout() {
         Long userId = LoginUserContextHolder.getUserId();
-        // 退出登录 (指定用户 ID)
         StpUtil.logout(userId);
         return Response.success();
     }
 
-    /**
-     * 更新用户密码
-     *
-     * @param updatePasswordReqVO 更新密码参数
-     * @return 是否更新成功
-     */
     @Override
-    public Response<?> updatePassword(UpdatePasswordReqVO updatePasswordReqVO) {
-        // 获取用户提交的验证码
-        String passwordResetCode = updatePasswordReqVO.verificationCode();
-        // 验证码不能为空
-        Preconditions.checkArgument(StringUtils.isNotBlank(passwordResetCode), "验证码不能为空");
-        // 构建更新密码验证码的 Redis Key
-        String updatePasswordVerificationCodeKey = RedisKeyConstants.buildUpdatePasswordVerificationCodeKey(updatePasswordReqVO.phone());
-        // 从 Redis 中获取发送的验证码
-        String sentCode = (String) redisTemplate.opsForValue().get(updatePasswordVerificationCodeKey);
-        // 判断验证码是否已过期
-        Preconditions.checkArgument(StringUtils.isNotBlank(sentCode), "验证码已过期");
-        // 判断用户提交的验证码与 Redis 中的验证码是否一致
-        Preconditions.checkArgument(Strings.CS.equals(passwordResetCode, sentCode), "验证码错误");
-        // 获取用户提交的新密码
-        String newPassword = updatePasswordReqVO.newPassword();
-        // 对新密码进行加密
-        String encryptedPassword = passwordEncoder.encode(newPassword);
-        // 获取当前请求对应的用户 ID
-        Long userId = LoginUserContextHolder.getUserId();
+    public Response<?> updatePassword(UpdatePasswordReqVO vo) {
+        String phone = vo.phone();
+        String code = vo.verificationCode();
 
-        // 构建用户数据对象
+        // 1. 验证码校验
+        Preconditions.checkArgument(StringUtils.isNotBlank(code), "验证码不能为空");
+        String key = RedisKeyConstants.buildUpdatePasswordVerificationCodeKey(phone);
+        String sentCode = (String) redisTemplate.opsForValue().get(key);
+
+        if (StringUtils.isBlank(sentCode)) {
+            throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_EXPIRED);
+        }
+        if (!Strings.CS.equals(code, sentCode)) {
+            throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_ERROR);
+        }
+
+        // 2. 更新密码
+        Long userId = LoginUserContextHolder.getUserId();
         UserDO userDO = UserDO.builder()
                 .id(userId)
-                .password(encryptedPassword)
+                .password(passwordEncoder.encode(vo.newPassword()))
                 .updateTime(LocalDateTime.now())
                 .build();
-        // 更新密码
+
         userDOMapper.updateByPrimaryKeySelective(userDO);
-        // 返回成功响应
+
+        // 3. 清理验证码，防止二次使用
+        redisTemplate.delete(key);
+
+        // 4. 登出
+        StpUtil.logout();
+
         return Response.success();
     }
 }
