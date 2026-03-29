@@ -23,4 +23,11 @@ public interface UserDOMapper {
      */
     void insert(UserDO userDO);
 
+    /**
+     * 根据主键更新用户信息
+     *
+     * @param userDO 用户数据对象,包含要更新的用户信息,
+     *               如手机号、昵称、密码、状态等
+     */
+    void updateByPrimaryKeySelective(UserDO userDO);
 }

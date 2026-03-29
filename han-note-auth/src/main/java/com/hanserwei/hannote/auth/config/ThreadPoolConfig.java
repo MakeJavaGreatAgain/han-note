@@ -12,9 +12,14 @@ import java.util.concurrent.Executor;
 @Configuration
 public class ThreadPoolConfig {
 
-    @Bean(name = "taskExecutor")
-    public Executor taskExecutor() {
+    @Bean(name = "authLoginExecutor")
+    public Executor authLoginExecutor() {
 
         return new VirtualThreadTaskExecutor("AuthExecutor-");
+    }
+
+    @Bean(name = "authUpdatePasswordExecutor")
+    public Executor authUpdatePasswordExecutor() {
+        return new VirtualThreadTaskExecutor("AuthExecutor2-");
     }
 }

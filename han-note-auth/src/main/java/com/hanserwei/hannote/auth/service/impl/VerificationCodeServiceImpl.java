@@ -15,8 +15,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
+ * 验证码业务实现类
+ *
  * @author hanserwei
  */
 @Slf4j
@@ -26,42 +29,79 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Resource(name = "taskExecutor")
-    private Executor taskExecutor;
+    @Resource(name = "authLoginExecutor")
+    private Executor authLoginExecutor;
+
+    @Resource(name = "authUpdatePasswordExecutor")
+    private Executor authUpdatePasswordExecutor;
 
     @Resource
     private AliyunSmsHelper aliyunSmsHelper;
 
+    // --- 常量提取 ---
+    /**
+     * 短信签名
+     */
+    private static final String SMS_SIGN_NAME = "速通互联验证码";
+    /**
+     * 短信模板码
+     */
+    private static final String SMS_TEMPLATE_CODE = "100001";
+    /**
+     * 验证码长度
+     */
+    private static final int CODE_LENGTH = 6;
+    /**
+     * 验证码有效期（分钟）
+     */
+    private static final long EXPIRE_TIME = 3L;
+
     @Override
-    public Response<?> send(SendVerificationCodeReqVO sendVerificationCodeReqVO) {
-        // 手机号
-        String phone = sendVerificationCodeReqVO.phone();
+    public Response<?> sendLogin(SendVerificationCodeReqVO reqVO) {
+        return sendVerificationCode(reqVO.phone(), RedisKeyConstants::buildVerificationCodeKey, authLoginExecutor);
+    }
 
-        // 构造验证码Key
-        String verificationCodeKey = RedisKeyConstants.buildVerificationCodeKey(phone);
+    @Override
+    public Response<?> sendUpdatePassword(SendVerificationCodeReqVO reqVO) {
+        return sendVerificationCode(reqVO.phone(), RedisKeyConstants::buildUpdatePasswordVerificationCodeKey, authUpdatePasswordExecutor);
+    }
 
-        // 判断是否已经发送Key
-        if (redisTemplate.hasKey(verificationCodeKey)) {
+    /**
+     * 通用发送验证码逻辑提取
+     *
+     * @param phone        手机号
+     * @param keyGenerator Redis Key 生成函数
+     * @param executor     执行发送任务的线程池
+     * @return 响应结果
+     */
+    private Response<?> sendVerificationCode(String phone, Function<String, String> keyGenerator, Executor executor) {
+        // 1. 构建并校验 Key
+        String redisKey = keyGenerator.apply(phone);
+
+        // 检查是否发送频繁（此处可优化为 setIfAbsent 原子操作防止并发漏洞）
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
             throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_SEND_FREQUENTLY);
         }
 
-        // 生成6位验证码
-        String verificationCode = RandomUtil.randomNumbers(6);
+        // 2. 生成 6 位验证码
+        String code = RandomUtil.randomNumbers(CODE_LENGTH);
 
-        // 调用第三方短信发送服务
-        taskExecutor.execute(() -> {
-            String signName = "速通互联验证码"; // 签名，个人测试签名无法修改
-            String templateCode = "100001"; // 短信模板编码
-            // 短信模板参数，code 表示要发送的验证码；min 表示验证码有时间时长，即 3 分钟
-            String templateParam = String.format("{\"code\":\"%s\",\"min\":\"3\"}", verificationCode);
-            aliyunSmsHelper.sendMessage(signName, templateCode, phone, templateParam);
+        // 3. 异步发送短信
+        executor.execute(() -> {
+            try {
+                // 构建 JSON 参数：{"code":"123456","min":"3"}
+                String templateParam = String.format("{\"code\":\"%s\",\"min\":\"%d\"}", code, EXPIRE_TIME);
+                aliyunSmsHelper.sendMessage(SMS_SIGN_NAME, SMS_TEMPLATE_CODE, phone, templateParam);
+                log.info("==> 验证码短信发送成功, 手机号: {}, 验证码: {}", phone, code);
+            } catch (Exception e) {
+                log.error("==> 验证码短信发送失败, 手机号: {}", phone, e);
+            }
         });
 
-        log.info("==> 手机号: {}, 已发送验证码：【{}】", phone, verificationCode);
+        // 4. 存入 Redis 并设置过期时间
+        redisTemplate.opsForValue().set(redisKey, code, EXPIRE_TIME, TimeUnit.MINUTES);
 
-        // 存储验证码到 redis, 并设置过期时间为 3 分钟
-        redisTemplate.opsForValue().set(verificationCodeKey, verificationCode, 3, TimeUnit.MINUTES);
-
+        log.info("==> 验证码已存入缓存, 手机号: {}, Key: {}", phone, redisKey);
         return Response.success();
     }
 }

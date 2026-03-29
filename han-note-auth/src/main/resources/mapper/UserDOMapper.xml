@@ -20,4 +20,22 @@
                 #{status,jdbcType=TINYINT}, #{introduction,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
                 #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BOOLEAN})
     </insert>
+    
+    <update id="updateByPrimaryKeySelective" parameterType="com.hanserwei.hannote.auth.domain.dataobject.UserDO">
+        update t_user
+        <set>
+            <if test="password != null and password != ''">password = #{password,jdbcType=VARCHAR},</if>
+            <if test="nickname != null and nickname != ''">nickname = #{nickname,jdbcType=VARCHAR},</if>
+            <if test="avatar != null and avatar != ''">avatar = #{avatar,jdbcType=VARCHAR},</if>
+            <if test="birthday != null">birthday = #{birthday,jdbcType=DATE},</if>
+            <if test="backgroundImg != null and backgroundImg != ''">background_img = #{backgroundImg,jdbcType=VARCHAR},</if>
+            <if test="phone != null and phone != ''">phone = #{phone,jdbcType=VARCHAR},</if>
+            <if test="sex != null">sex = #{sex,jdbcType=TINYINT},</if>
+            <if test="status != null">status = #{status,jdbcType=TINYINT},</if>
+            <if test="introduction != null and introduction != ''">introduction = #{introduction,jdbcType=VARCHAR},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="deleted != null">deleted = #{deleted,jdbcType=BOOLEAN}</if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
 </mapper>

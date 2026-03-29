@@ -1,6 +1,7 @@
 package com.hanserwei.hannote.auth.service;
 
 import com.hanserwei.framework.response.Response;
+import com.hanserwei.hannote.auth.model.vo.user.UpdatePasswordReqVO;
 import com.hanserwei.hannote.auth.model.vo.user.UserLoginReqVO;
 
 /**
@@ -15,6 +16,14 @@ public interface UserService {
      * @return token令牌
      */
     Response<String> loginAndRegister(UserLoginReqVO userLoginReqVO);
+
+    /**
+     * 修改密码
+     *
+     * @param updatePasswordReqVO 修改密码请求
+     * @return 修改密码结果
+     */
+    Response<?> updatePassword(UpdatePasswordReqVO updatePasswordReqVO);
 
     /**
      * 登出

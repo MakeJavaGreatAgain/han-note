@@ -19,6 +19,7 @@ import com.hanserwei.hannote.auth.enums.DeletedEnum;
 import com.hanserwei.hannote.auth.enums.LoginTypeEnum;
 import com.hanserwei.hannote.auth.enums.ResponseCodeEnum;
 import com.hanserwei.hannote.auth.enums.StatusEnum;
+import com.hanserwei.hannote.auth.model.vo.user.UpdatePasswordReqVO;
 import com.hanserwei.hannote.auth.model.vo.user.UserLoginReqVO;
 import com.hanserwei.hannote.auth.service.UserService;
 import com.hanserwei.hannote.biz.context.holer.LoginUserContextHolder;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
@@ -46,6 +48,8 @@ public class UserServiceImpl implements UserService {
     private UserDOMapper userDOMapper;
     @Resource
     private RoleDOMapper roleDOMapper;
+    @Resource
+    private PasswordEncoder passwordEncoder;
     @Resource
     private UserRoleRelDOMapper userRoleRelDOMapper;
     @Resource
@@ -196,6 +200,45 @@ public class UserServiceImpl implements UserService {
         Long userId = LoginUserContextHolder.getUserId();
         // 退出登录 (指定用户 ID)
         StpUtil.logout(userId);
+        return Response.success();
+    }
+
+    /**
+     * 更新用户密码
+     *
+     * @param updatePasswordReqVO 更新密码参数
+     * @return 是否更新成功
+     */
+    @Override
+    public Response<?> updatePassword(UpdatePasswordReqVO updatePasswordReqVO) {
+        // 获取用户提交的验证码
+        String passwordResetCode = updatePasswordReqVO.verificationCode();
+        // 验证码不能为空
+        Preconditions.checkArgument(StringUtils.isNotBlank(passwordResetCode), "验证码不能为空");
+        // 构建更新密码验证码的 Redis Key
+        String updatePasswordVerificationCodeKey = RedisKeyConstants.buildUpdatePasswordVerificationCodeKey(updatePasswordReqVO.phone());
+        // 从 Redis 中获取发送的验证码
+        String sentCode = (String) redisTemplate.opsForValue().get(updatePasswordVerificationCodeKey);
+        // 判断验证码是否已过期
+        Preconditions.checkArgument(StringUtils.isNotBlank(sentCode), "验证码已过期");
+        // 判断用户提交的验证码与 Redis 中的验证码是否一致
+        Preconditions.checkArgument(Strings.CS.equals(passwordResetCode, sentCode), "验证码错误");
+        // 获取用户提交的新密码
+        String newPassword = updatePasswordReqVO.newPassword();
+        // 对新密码进行加密
+        String encryptedPassword = passwordEncoder.encode(newPassword);
+        // 获取当前请求对应的用户 ID
+        Long userId = LoginUserContextHolder.getUserId();
+
+        // 构建用户数据对象
+        UserDO userDO = UserDO.builder()
+                .id(userId)
+                .password(encryptedPassword)
+                .updateTime(LocalDateTime.now())
+                .build();
+        // 更新密码
+        userDOMapper.updateByPrimaryKeySelective(userDO);
+        // 返回成功响应
         return Response.success();
     }
 }

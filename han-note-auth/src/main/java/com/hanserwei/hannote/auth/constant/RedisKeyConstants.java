@@ -11,6 +11,11 @@ public class RedisKeyConstants {
     private static final String VERIFICATION_CODE_KEY_PREFIX = "verification_code:";
 
     /**
+     * 更新密码严重码 KEY 前缀
+     */
+    private static final String UPDATE_PASSWORD_VERIFICATION_CODE_KEY_PREFIX = "update_password_verification_code:";
+
+    /**
      * 小憨书全局 ID 生成器 KEY
      */
     public static final String HANNOTE_ID_GENERATOR_KEY = "hannote.id.generator";
@@ -33,6 +38,16 @@ public class RedisKeyConstants {
      */
     public static String buildVerificationCodeKey(String phone) {
         return VERIFICATION_CODE_KEY_PREFIX + phone;
+    }
+
+    /**
+     * 构建更新密码严重码 KEY
+     *
+     * @param phone 手机号
+     * @return 严重码Key
+     */
+    public static String buildUpdatePasswordVerificationCodeKey(String phone) {
+        return UPDATE_PASSWORD_VERIFICATION_CODE_KEY_PREFIX + phone;
     }
 
     /**

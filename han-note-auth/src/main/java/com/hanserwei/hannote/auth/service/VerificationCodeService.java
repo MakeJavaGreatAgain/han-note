@@ -9,10 +9,18 @@ import com.hanserwei.hannote.auth.model.vo.veriticationcode.SendVerificationCode
 public interface VerificationCodeService {
 
     /**
-     * 发送短信验证码
+     * 发送登录验证码
      *
-     * @param sendVerificationCodeReqVO 严重码请求
+     * @param sendVerificationCodeReqVO 验证码请求
      * @return 验证码发送结果
      */
-    Response<?> send(SendVerificationCodeReqVO sendVerificationCodeReqVO);
+    Response<?> sendLogin(SendVerificationCodeReqVO sendVerificationCodeReqVO);
+
+    /**
+     * 发送修改密码验证码
+     *
+     * @param sendVerificationCodeReqVO 验证码请求
+     * @return 验证码发送结果
+     */
+    Response<?> sendUpdatePassword(SendVerificationCodeReqVO sendVerificationCodeReqVO);
 }

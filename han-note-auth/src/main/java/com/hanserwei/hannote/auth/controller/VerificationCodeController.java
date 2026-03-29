@@ -21,10 +21,16 @@ public class VerificationCodeController {
     @Resource
     private VerificationCodeService verificationCodeService;
 
-    @PostMapping("/verification/code/send")
+    @PostMapping("/verification/code/login/send")
     @ApiOperationLog(description = "发送短信验证码")
-    public Response<?> send(@Validated @RequestBody SendVerificationCodeReqVO sendVerificationCodeReqVO) {
-        return verificationCodeService.send(sendVerificationCodeReqVO);
+    public Response<?> sendLogin(@Validated @RequestBody SendVerificationCodeReqVO sendVerificationCodeReqVO) {
+        return verificationCodeService.sendLogin(sendVerificationCodeReqVO);
+    }
+
+    @PostMapping("/verification/code/updatepassword/send")
+    @ApiOperationLog(description = "发送短信验证码")
+    public Response<?> sendUpdatePassword(@Validated @RequestBody SendVerificationCodeReqVO sendVerificationCodeReqVO) {
+        return verificationCodeService.sendUpdatePassword(sendVerificationCodeReqVO);
     }
 
 }
