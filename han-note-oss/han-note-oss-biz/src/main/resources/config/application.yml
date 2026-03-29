@@ -1,0 +1,27 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: han-note-oss
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.1.117:8848
+        namespace: 6274668c-88bc-4fe9-a8b4-5e52063030b2
+        group: DEFAULT_GROUP
+        file-extension: yaml
+        # 鉴权必须配置这两项
+        username: nacos
+        password: nacos
+      discovery:
+        server-addr: 192.168.1.117:8848
+        namespace: 6274668c-88bc-4fe9-a8b4-5e52063030b2
+        group: DEFAULT_GROUP
+        enabled: true
+        username: nacos
+        password: nacos
+  config:
+    import:
+      - nacos:han-note-oss-dev.yaml?refreshEnabled=true

@@ -8,3 +8,5 @@ include("framework:han-note-spring-boot-starter-jackson")
 
 include("han-note-auth")
 include("han-note-gateway")
+include("han-note-oss:han-note-oss-api")
+include("han-note-oss:han-note-oss-biz")
