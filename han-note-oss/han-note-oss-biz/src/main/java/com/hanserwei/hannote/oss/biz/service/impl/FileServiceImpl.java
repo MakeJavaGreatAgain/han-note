@@ -24,7 +24,7 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public Response<?> uploadFile(MultipartFile file) {
-        String url = fileStrategy.uploadFile(file, "han-note");
+        String url = fileStrategy.uploadFile(file);
         return Response.success(url);
     }
 }

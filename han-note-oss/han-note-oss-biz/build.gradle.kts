@@ -32,6 +32,9 @@ dependencies {
     // Aliyun OSS SDK
     implementation(libs.aliyun.oss)
 
+    // Tencent COS SDK
+    implementation(libs.tencent.cos)
+
     // Lombok
     implementation(libs.lombok)
     compileOnly(libs.lombok)

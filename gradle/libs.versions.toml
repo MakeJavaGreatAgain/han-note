@@ -6,6 +6,7 @@ mybatis = "4.0.1"
 aliyunDypnsapi = "2.0.0"
 aliyunOss = "0.3.2"
 s3 = "2.42.23"
+tencentCos = "5.6.263"
 
 [libraries]
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
@@ -14,5 +15,6 @@ mybatis-spring-boot-starter-test = { module = "org.mybatis.spring.boot:mybatis-s
 aliyun-dypnsapi = { module = "com.aliyun:alibabacloud-dypnsapi20170525", version.ref = "aliyunDypnsapi" }
 aliyun-oss = { module = "com.aliyun:alibabacloud-oss-v2", version.ref = "aliyunOss" }
 awssdk = { module = "software.amazon.awssdk:s3", version.ref = "s3" }
+tencent-cos = { module = "com.qcloud:cos_api", version.ref = "tencentCos" }
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
