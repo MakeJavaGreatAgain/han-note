@@ -1,48 +1,32 @@
 package com.hanserwei.hannote.biz.context.holer;
 
+import com.alibaba.ttl.TransmittableThreadLocal;
+
 /**
  * 登录用户上下文持有者
  * <p>
- * 利用 JDK {@link ScopedValue} 机制，在当前作用域中存储用户信息，实现用户信息在逻辑层级间的透明传递。
+ * 利用阿里巴巴 TTL 机制，在当前线程中存储用户信息，实现用户信息在逻辑层级间的透明传递。
  * 避免了在方法调用链中频繁传递用户 ID 等参数。
  * <p>
- * 与 ThreadLocal 不同，ScopedValue 是不可变的且与作用域绑定，作用域结束后自动释放，
- * 不存在内存泄漏和线程间串户的风险。在结构化并发（{@code StructuredTaskScope}）中，
- * ScopedValue 会自动传播到子线程。
+ * 与普通 ThreadLocal 不同，TTL 可在线程池复用线程的场景下传递上下文。
+ * 使用完毕后需要及时清理，避免线程复用导致上下文污染。
  *
  * @author hanserwei
  */
 public class LoginUserContextHolder {
 
     /**
-     * 存储当前登录用户 ID 的 ScopedValue
+     * 存储当前登录用户 ID 的 TTL
      */
-    private static final ScopedValue<Long> USER_ID_SCOPED_VALUE = ScopedValue.newInstance();
+    private static final TransmittableThreadLocal<Long> USER_ID_THREAD_LOCAL = new TransmittableThreadLocal<>();
 
     /**
-     * 在指定用户 ID 的作用域内执行操作（支持受检异常）
-     * <p>
-     * 用于 Servlet Filter 等需要抛出受检异常的场景。
+     * 设置当前登录用户 ID
      *
      * @param userId 用户 ID
-     * @param op     要执行的操作
-     * @param <R>    返回值类型
-     * @param <X>    异常类型
-     * @return op 的返回值
-     * @throws X op 抛出的异常
      */
-    public static <R, X extends Throwable> R callWithUserId(Long userId, ScopedValue.CallableOp<R, X> op) throws X {
-        return ScopedValue.where(USER_ID_SCOPED_VALUE, userId).call(op);
-    }
-
-    /**
-     * 在指定用户 ID 的作用域内执行操作
-     *
-     * @param userId   用户 ID
-     * @param runnable 要执行的操作
-     */
-    public static void runWithUserId(Long userId, Runnable runnable) {
-        ScopedValue.where(USER_ID_SCOPED_VALUE, userId).run(runnable);
+    public static void setUserId(Long userId) {
+        USER_ID_THREAD_LOCAL.set(userId);
     }
 
     /**
@@ -51,7 +35,13 @@ public class LoginUserContextHolder {
      * @return 用户 ID；如果当前不在绑定作用域内，则返回 null
      */
     public static Long getUserId() {
-        return USER_ID_SCOPED_VALUE.isBound() ? USER_ID_SCOPED_VALUE.get() : null;
+        return USER_ID_THREAD_LOCAL.get();
     }
 
+    /**
+     * 移除当前登录用户上下文
+     */
+    public static void remove() {
+        USER_ID_THREAD_LOCAL.remove();
+    }
 }
