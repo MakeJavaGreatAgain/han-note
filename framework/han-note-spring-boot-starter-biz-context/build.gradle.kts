@@ -19,6 +19,7 @@ dependencies {
     // lombok依赖
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
+    implementation(libs.ttl)
     // 通用工具依赖
     implementation(project(":framework:common"))
 }

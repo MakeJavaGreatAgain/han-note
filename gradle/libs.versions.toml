@@ -3,6 +3,7 @@ springBoot = "4.0.5"
 
 lombok = "1.18.36"
 mybatis = "4.0.1"
+ttl = "2.14.5"
 aliyunDypnsapi = "2.0.0"
 aliyunOss = "0.3.2"
 s3 = "2.42.23"
@@ -12,6 +13,7 @@ tencentCos = "5.6.263"
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 mybatis-spring-boot-starter = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter", version.ref = "mybatis" }
 mybatis-spring-boot-starter-test = { module = "org.mybatis.spring.boot:mybatis-spring-boot-starter-test", version.ref = "mybatis" }
+ttl = { module = "com.alibaba:transmittable-thread-local", version.ref = "ttl" }
 aliyun-dypnsapi = { module = "com.aliyun:alibabacloud-dypnsapi20170525", version.ref = "aliyunDypnsapi" }
 aliyun-oss = { module = "com.aliyun:alibabacloud-oss-v2", version.ref = "aliyunOss" }
 awssdk = { module = "software.amazon.awssdk:s3", version.ref = "s3" }

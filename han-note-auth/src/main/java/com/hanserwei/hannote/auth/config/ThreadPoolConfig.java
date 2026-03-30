@@ -1,10 +1,10 @@
 package com.hanserwei.hannote.auth.config;
 
+import java.util.concurrent.Executor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
-
-import java.util.concurrent.Executor;
 
 /**
  * @author hanserwei
@@ -14,7 +14,6 @@ public class ThreadPoolConfig {
 
     @Bean(name = "authLoginExecutor")
     public Executor authLoginExecutor() {
-
         return new VirtualThreadTaskExecutor("AuthExecutor-");
     }
 
