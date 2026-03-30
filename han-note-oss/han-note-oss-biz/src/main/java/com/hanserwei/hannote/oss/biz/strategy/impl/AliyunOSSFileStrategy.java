@@ -31,14 +31,14 @@ public class AliyunOSSFileStrategy implements FileStrategy {
     }
 
     /**
-     * 文件上传
+     * 文件上传到默认存储桶
      *
      * @param file 文件
      * @return 文件上传后的地址
      */
     @Override
     public String uploadFile(MultipartFile file) {
-        log.info(">>>> 文件上传开始至阿里云 OSS!,bucketName: han-note");
+        log.info(">>>> 文件上传开始至阿里云 OSS!");
         return aliyunOssClient.upload(file);
     }
 }
