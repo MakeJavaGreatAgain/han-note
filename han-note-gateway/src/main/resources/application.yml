@@ -35,6 +35,9 @@ spring:
   config:
     import:
       - nacos:han-note-gateway-dev.yaml?refreshEnabled=true
+  threads:
+    virtual:
+      enabled: true
 ############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
 sa-token:
   # token 名称（同时也是 cookie 名称）

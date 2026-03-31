@@ -1,10 +1,12 @@
 package com.hanserwei.hannote.auth.config;
 
-import java.util.concurrent.Executor;
-
+import com.hanserwei.hannote.biz.context.decorator.LoginUserContextTaskDecorator;
+import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
+
+import java.util.concurrent.Executor;
 
 /**
  * @author hanserwei
@@ -12,13 +14,21 @@ import org.springframework.core.task.VirtualThreadTaskExecutor;
 @Configuration
 public class ThreadPoolConfig {
 
+    @Resource
+    private LoginUserContextTaskDecorator loginUserContextTaskDecorator;
+
     @Bean(name = "authLoginExecutor")
     public Executor authLoginExecutor() {
-        return new VirtualThreadTaskExecutor("AuthExecutor-");
+        return buildContextAwareVirtualExecutor("AuthExecutor-");
     }
 
     @Bean(name = "authUpdatePasswordExecutor")
     public Executor authUpdatePasswordExecutor() {
-        return new VirtualThreadTaskExecutor("AuthExecutor2-");
+        return buildContextAwareVirtualExecutor("AuthExecutor2-");
+    }
+
+    private Executor buildContextAwareVirtualExecutor(String threadNamePrefix) {
+        VirtualThreadTaskExecutor executor = new VirtualThreadTaskExecutor(threadNamePrefix);
+        return command -> executor.execute(loginUserContextTaskDecorator.decorate(command));
     }
 }
