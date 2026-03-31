@@ -22,7 +22,6 @@ dependencies {
     constraints {
         api(libs.lombok)
         api(libs.mybatis.spring.boot.starter)
-        api(libs.ttl)
         api(libs.aliyun.dypnsapi)
     }
 }

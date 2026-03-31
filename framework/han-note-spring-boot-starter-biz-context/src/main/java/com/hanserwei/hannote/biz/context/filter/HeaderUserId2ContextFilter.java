@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * 提取请求头中的用户 ID 并绑定到 TTL 上下文中，以方便后续使用
+ * 提取请求头中的用户 ID 并绑定到 ScopedValue 作用域中，以方便后续使用
  *
  * @author hanserwei
  */
@@ -39,17 +39,21 @@ public class HeaderUserId2ContextFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 如果 header 中存在 userId，则绑定到 TTL 上下文中
-        log.info("=====> 绑定 userId 到 TTL 上下文， 用户 ID: {}", userId);
+        // 如果 header 中存在 userId，则绑定到 ScopedValue 作用域中
+        log.info("=====> 绑定 userId 到 ScopedValue 作用域，用户 ID: {}", userId);
         Long userIdLong = Long.valueOf(userId);
 
         try {
-            LoginUserContextHolder.setUserId(userIdLong);
-            chain.doFilter(request, response);
-        } finally {
-            LoginUserContextHolder.remove();
+            LoginUserContextHolder.callWithUserId(userIdLong, () -> {
+                chain.doFilter(request, response);
+                return null;
+            });
+        } catch (ServletException | IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ServletException("绑定登录用户上下文失败", e);
         }
 
-        log.info("=====> TTL 上下文结束， userId: {}", userId);
+        log.info("=====> ScopedValue 作用域结束，userId: {}", userId);
     }
 }

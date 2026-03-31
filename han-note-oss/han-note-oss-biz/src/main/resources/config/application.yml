@@ -25,3 +25,6 @@ spring:
   config:
     import:
       - nacos:han-note-oss-dev.yaml?refreshEnabled=true
+  threads:
+    virtual:
+      enabled: true

@@ -23,6 +23,9 @@ spring:
   config:
     import:
       - nacos:han-note-auth-dev.yaml?refreshEnabled=true
+  threads:
+    virtual:
+      enabled: true
 server:
   port: 8081
 mybatis:
