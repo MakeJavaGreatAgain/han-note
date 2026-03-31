@@ -10,10 +10,15 @@ tasks.jar {
     archiveBaseName.set("han-note-spring-boot-starter-biz-context")
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     // 平台依赖
     implementation(platform(project(":platform")))
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    compileOnly("org.springframework.boot:spring-boot-starter-restclient")
     compileOnly(platform(project(":platform")))
     annotationProcessor(platform(project(":platform")))
     // lombok依赖
@@ -21,6 +26,11 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     // 通用工具依赖
     implementation(project(":framework:common"))
+
+    testImplementation(platform(project(":platform")))
+    testImplementation("org.springframework.boot:spring-boot-starter-restclient")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 publishing {

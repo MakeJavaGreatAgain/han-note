@@ -1,6 +1,7 @@
 package com.hanserwei.hannote.user.biz.service.impl;
 
 import com.google.common.base.Preconditions;
+import com.hanserwei.framework.exception.BizException;
 import com.hanserwei.framework.response.Response;
 import com.hanserwei.framework.utils.ParamUtils;
 import com.hanserwei.hannote.biz.context.holer.LoginUserContextHolder;
@@ -9,6 +10,7 @@ import com.hanserwei.hannote.user.biz.domain.mapper.UserDOMapper;
 import com.hanserwei.hannote.user.biz.enums.ResponseCodeEnum;
 import com.hanserwei.hannote.user.biz.enums.SexEnum;
 import com.hanserwei.hannote.user.biz.model.vo.UpdateUserInfoReqVO;
+import com.hanserwei.hannote.user.biz.rpc.OssRpcService;
 import com.hanserwei.hannote.user.biz.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,9 @@ public class UserServiceImpl implements UserService {
     @Resource
     private UserDOMapper userDOMapper;
 
+    @Resource
+    private OssRpcService ossRpcService;
+
     /**
      * 更新用户信息
      *
@@ -48,7 +53,8 @@ public class UserServiceImpl implements UserService {
 
         MultipartFile avatarFile = updateUserInfoReqVO.avatar();
         if (Objects.nonNull(avatarFile) && !avatarFile.isEmpty()) {
-            // todo: 调用对象存储服务上传文件，回填头像地址并将 needUpdate 置为 true
+            userDO.setAvatar(uploadFile(avatarFile, ResponseCodeEnum.UPLOAD_AVATAR_FAIL));
+            needUpdate = true;
         }
 
         String nickname = StringUtils.trim(updateUserInfoReqVO.nickname());
@@ -90,7 +96,8 @@ public class UserServiceImpl implements UserService {
 
         MultipartFile backgroundImgFile = updateUserInfoReqVO.backgroundImg();
         if (Objects.nonNull(backgroundImgFile) && !backgroundImgFile.isEmpty()) {
-            // todo: 调用对象存储服务上传文件，回填背景图地址并将 needUpdate 置为 true
+            userDO.setBackgroundImg(uploadFile(backgroundImgFile, ResponseCodeEnum.UPLOAD_BACKGROUND_IMG_FAIL));
+            needUpdate = true;
         }
 
         if (!needUpdate) {
@@ -101,5 +108,20 @@ public class UserServiceImpl implements UserService {
         userDOMapper.updateByPrimaryKeySelective(userDO);
         log.info("update user info success, userId: {}", userId);
         return Response.success();
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param file             文件
+     * @param responseCodeEnum 上传失败响应码
+     * @return 文件访问链接
+     */
+    private String uploadFile(MultipartFile file, ResponseCodeEnum responseCodeEnum) {
+        String fileUrl = ossRpcService.uploadFile(file);
+        if (StringUtils.isBlank(fileUrl)) {
+            throw new BizException(responseCodeEnum);
+        }
+        return fileUrl;
     }
 }
