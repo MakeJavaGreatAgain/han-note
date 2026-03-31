@@ -23,8 +23,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config")
     implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery")
+
     // Internal Projects
     implementation(project(":framework:common"))
+    implementation(project(":framework:han-note-spring-boot-starter-biz-operationlog"))
+    implementation(project(":framework:han-note-spring-boot-starter-biz-context"))
+    implementation(project(":framework:han-note-spring-boot-starter-jackson"))
+    implementation(project(":han-note-oss:han-note-oss-api"))
 
     // AWS SDK (用于 Rustfs)
     implementation(libs.awssdk)
