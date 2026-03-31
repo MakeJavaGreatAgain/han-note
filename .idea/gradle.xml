@@ -19,6 +19,9 @@
             <option value="$PROJECT_DIR$/han-note-oss" />
             <option value="$PROJECT_DIR$/han-note-oss/han-note-oss-api" />
             <option value="$PROJECT_DIR$/han-note-oss/han-note-oss-biz" />
+            <option value="$PROJECT_DIR$/han-note-user" />
+            <option value="$PROJECT_DIR$/han-note-user/han-note-user-api" />
+            <option value="$PROJECT_DIR$/han-note-user/han-note-user-biz" />
             <option value="$PROJECT_DIR$/platform" />
           </set>
         </option>
