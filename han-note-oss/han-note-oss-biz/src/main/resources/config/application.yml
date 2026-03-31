@@ -1,5 +1,3 @@
-server:
-  port: 8082
 spring:
   application:
     name: han-note-oss
@@ -15,6 +13,7 @@ spring:
         # 鉴权必须配置这两项
         username: nacos
         password: nacos
+        refresh-enabled: true
       discovery:
         server-addr: 192.168.1.117:8848
         namespace: 6274668c-88bc-4fe9-a8b4-5e52063030b2
@@ -24,7 +23,5 @@ spring:
         password: nacos
   config:
     import:
-      - nacos:han-note-oss-dev.yaml?refreshEnabled=true
-  threads:
-    virtual:
-      enabled: true
+      - nacos:han-note-common-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+      - nacos:${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}

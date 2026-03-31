@@ -6,7 +6,7 @@ group = property("group") as String
 version = property("version") as String
 
 tasks.jar {
-    archiveBaseName.set("han-note-oss-api")
+    archiveBaseName.set("han-note-user-api")
 }
 
 dependencies {
