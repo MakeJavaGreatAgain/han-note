@@ -17,7 +17,6 @@ import com.hanserwei.hannote.auth.enums.DeletedEnum;
 import com.hanserwei.hannote.auth.enums.LoginTypeEnum;
 import com.hanserwei.hannote.auth.enums.ResponseCodeEnum;
 import com.hanserwei.hannote.auth.enums.StatusEnum;
-import com.hanserwei.hannote.auth.model.vo.user.UpdatePasswordReqVO;
 import com.hanserwei.hannote.auth.model.vo.user.UserLoginReqVO;
 import com.hanserwei.hannote.auth.service.UserService;
 import com.hanserwei.hannote.biz.context.holer.LoginUserContextHolder;
@@ -196,39 +195,5 @@ public class UserServiceImpl implements UserService {
         return Response.success();
     }
 
-    @Override
-    public Response<?> updatePassword(UpdatePasswordReqVO vo) {
-        String phone = vo.phone();
-        String code = vo.verificationCode();
 
-        // 1. 验证码校验
-        Preconditions.checkArgument(StringUtils.isNotBlank(code), "验证码不能为空");
-        String key = RedisKeyConstants.buildUpdatePasswordVerificationCodeKey(phone);
-        String sentCode = (String) redisTemplate.opsForValue().get(key);
-
-        if (StringUtils.isBlank(sentCode)) {
-            throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_EXPIRED);
-        }
-        if (!Strings.CS.equals(code, sentCode)) {
-            throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_ERROR);
-        }
-
-        // 2. 更新密码
-        Long userId = LoginUserContextHolder.getUserId();
-        UserDO userDO = UserDO.builder()
-                .id(userId)
-                .password(passwordEncoder.encode(vo.newPassword()))
-                .updateTime(LocalDateTime.now())
-                .build();
-
-        userDOMapper.updateByPrimaryKeySelective(userDO);
-
-        // 3. 清理验证码，防止二次使用
-        redisTemplate.delete(key);
-
-        // 4. 登出
-        StpUtil.logout();
-
-        return Response.success();
-    }
 }

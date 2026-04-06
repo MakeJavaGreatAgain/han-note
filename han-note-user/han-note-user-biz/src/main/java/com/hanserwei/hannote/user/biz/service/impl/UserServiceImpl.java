@@ -1,9 +1,12 @@
 package com.hanserwei.hannote.user.biz.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.google.common.base.Preconditions;
 import com.hanserwei.framework.exception.BizException;
 import com.hanserwei.framework.response.Response;
 import com.hanserwei.framework.utils.ParamUtils;
+import com.hanserwei.hannote.auth.constant.RedisKeyConstants;
+import com.hanserwei.hannote.user.biz.model.vo.UpdatePasswordReqVO;
 import com.hanserwei.hannote.biz.context.holer.LoginUserContextHolder;
 import com.hanserwei.hannote.user.biz.domain.dataobject.UserDO;
 import com.hanserwei.hannote.user.biz.domain.mapper.UserDOMapper;
@@ -15,6 +18,9 @@ import com.hanserwei.hannote.user.biz.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +41,10 @@ public class UserServiceImpl implements UserService {
     @Resource
     private OssRpcService ossRpcService;
 
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
+    @Resource
+    private PasswordEncoder passwordEncoder;
     /**
      * 更新用户信息
      *
@@ -123,5 +133,40 @@ public class UserServiceImpl implements UserService {
             throw new BizException(responseCodeEnum);
         }
         return fileUrl;
+    }
+    @Override
+    public Response<?> updatePassword(UpdatePasswordReqVO vo) {
+        String phone = vo.phone();
+        String code = vo.verificationCode();
+
+        // 1. 验证码校验
+        Preconditions.checkArgument(StringUtils.isNotBlank(code), "验证码不能为空");
+        String key = RedisKeyConstants.buildUpdatePasswordVerificationCodeKey(phone);
+        String sentCode = (String) redisTemplate.opsForValue().get(key);
+
+        if (StringUtils.isBlank(sentCode)) {
+            throw new BizException(com.hanserwei.hannote.auth.enums.ResponseCodeEnum.VERIFICATION_CODE_EXPIRED);
+        }
+        if (!Strings.CS.equals(code, sentCode)) {
+            throw new BizException(com.hanserwei.hannote.auth.enums.ResponseCodeEnum.VERIFICATION_CODE_ERROR);
+        }
+
+        // 2. 更新密码
+        Long userId = LoginUserContextHolder.getUserId();
+        UserDO userDO = UserDO.builder()
+                .id(userId)
+                .password(passwordEncoder.encode(vo.newPassword()))
+                .updateTime(LocalDateTime.now())
+                .build();
+
+        userDOMapper.updateByPrimaryKeySelective(userDO);
+
+        // 3. 清理验证码，防止二次使用
+        redisTemplate.delete(key);
+
+        // 4. 登出
+        StpUtil.logout();
+
+        return Response.success();
     }
 }

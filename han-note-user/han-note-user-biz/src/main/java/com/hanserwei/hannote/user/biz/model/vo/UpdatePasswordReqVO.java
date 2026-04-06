@@ -1,4 +1,4 @@
-package com.hanserwei.hannote.auth.model.vo.user;
+package com.hanserwei.hannote.user.biz.model.vo;
 
 import jakarta.validation.constraints.NotBlank;
 
