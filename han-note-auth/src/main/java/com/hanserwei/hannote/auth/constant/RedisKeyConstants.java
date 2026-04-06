@@ -11,7 +11,7 @@ public class RedisKeyConstants {
     private static final String VERIFICATION_CODE_KEY_PREFIX = "verification_code:";
 
     /**
-     * 更新密码严重码 KEY 前缀
+     * 更新密码验证码 KEY 前缀
      */
     private static final String UPDATE_PASSWORD_VERIFICATION_CODE_KEY_PREFIX = "update_password_verification_code:";
 
@@ -34,17 +34,17 @@ public class RedisKeyConstants {
      * 构建验证码 KEY
      *
      * @param phone 手机号
-     * @return 严重码Key
+     * @return 验证码Key
      */
     public static String buildVerificationCodeKey(String phone) {
         return VERIFICATION_CODE_KEY_PREFIX + phone;
     }
 
     /**
-     * 构建更新密码严重码 KEY
+     * 构建更新密码验证码 KEY
      *
      * @param phone 手机号
-     * @return 严重码Key
+     * @return 验证码Key
      */
     public static String buildUpdatePasswordVerificationCodeKey(String phone) {
         return UPDATE_PASSWORD_VERIFICATION_CODE_KEY_PREFIX + phone;
