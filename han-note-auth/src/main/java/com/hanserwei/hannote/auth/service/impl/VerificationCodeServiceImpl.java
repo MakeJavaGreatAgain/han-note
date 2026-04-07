@@ -3,7 +3,7 @@ package com.hanserwei.hannote.auth.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import com.hanserwei.framework.exception.BizException;
 import com.hanserwei.framework.response.Response;
-import com.hanserwei.hannote.auth.constant.RedisKeyConstants;
+import com.hanserwei.framework.constant.RedisKeyConstants;
 import com.hanserwei.hannote.auth.enums.ResponseCodeEnum;
 import com.hanserwei.hannote.auth.model.vo.veriticationcode.SendVerificationCodeReqVO;
 import com.hanserwei.hannote.auth.service.VerificationCodeService;

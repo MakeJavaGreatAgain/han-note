@@ -4,13 +4,15 @@ import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.hanserwei.framework.utils.JsonUtils;
-import com.hanserwei.hannote.auth.constant.RedisKeyConstants;
-import com.hanserwei.hannote.auth.domain.dataobject.PermissionDO;
-import com.hanserwei.hannote.auth.domain.dataobject.RoleDO;
-import com.hanserwei.hannote.auth.domain.dataobject.RolePermissionRelDO;
-import com.hanserwei.hannote.auth.domain.mapper.PermissionDOMapper;
-import com.hanserwei.hannote.auth.domain.mapper.RoleDOMapper;
-import com.hanserwei.hannote.auth.domain.mapper.RolePermissionRelDOMapper;
+import com.hanserwei.framework.constant.RedisKeyConstants;
+
+
+import com.hanserwei.hannote.user.biz.domain.dataobject.PermissionDO;
+import com.hanserwei.hannote.user.biz.domain.dataobject.RoleDO;
+import com.hanserwei.hannote.user.biz.domain.dataobject.RolePermissionRelDO;
+import com.hanserwei.hannote.user.biz.domain.mapper.PermissionDOMapper;
+import com.hanserwei.hannote.user.biz.domain.mapper.RoleDOMapper;
+import com.hanserwei.hannote.user.biz.domain.mapper.RolePermissionRelDOMapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;

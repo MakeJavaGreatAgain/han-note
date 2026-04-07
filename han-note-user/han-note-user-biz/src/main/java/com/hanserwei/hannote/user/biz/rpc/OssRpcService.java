@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hanserwei.framework.response.Response;
-import com.hanserwei.hannote.oss.api.FileClient;
+import com.hanserwei.hannote.user.api.FileClient;
 import jakarta.annotation.Resource;
 
 /**
