@@ -45,4 +45,7 @@ dependencies {
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
+    //user
+    implementation(project(":han-note-user:han-note-user-biz"))
+    implementation(project(":han-note-user:han-note-user-api"))
 }

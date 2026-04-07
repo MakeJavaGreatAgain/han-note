@@ -5,21 +5,21 @@ import com.google.common.base.Preconditions;
 import com.hanserwei.framework.exception.BizException;
 import com.hanserwei.framework.response.Response;
 import com.hanserwei.framework.utils.JsonUtils;
-import com.hanserwei.hannote.auth.constant.RedisKeyConstants;
+import com.hanserwei.framework.constant.RedisKeyConstants;
 import com.hanserwei.hannote.auth.constant.RoleConstants;
-import com.hanserwei.hannote.auth.domain.dataobject.RoleDO;
-import com.hanserwei.hannote.auth.domain.dataobject.UserDO;
-import com.hanserwei.hannote.auth.domain.dataobject.UserRoleRelDO;
-import com.hanserwei.hannote.auth.domain.mapper.RoleDOMapper;
-import com.hanserwei.hannote.auth.domain.mapper.UserDOMapper;
-import com.hanserwei.hannote.auth.domain.mapper.UserRoleRelDOMapper;
+
 import com.hanserwei.hannote.auth.enums.DeletedEnum;
 import com.hanserwei.hannote.auth.enums.LoginTypeEnum;
 import com.hanserwei.hannote.auth.enums.ResponseCodeEnum;
 import com.hanserwei.hannote.auth.enums.StatusEnum;
 import com.hanserwei.hannote.auth.model.vo.user.UserLoginReqVO;
+import com.hanserwei.hannote.auth.rpc.UserRpcService;
 import com.hanserwei.hannote.auth.service.UserService;
 import com.hanserwei.hannote.biz.context.holer.LoginUserContextHolder;
+import com.hanserwei.hannote.user.biz.domain.dataobject.RoleDO;
+import com.hanserwei.hannote.user.biz.domain.dataobject.UserDO;
+import com.hanserwei.hannote.user.biz.domain.dataobject.UserRoleRelDO;
+
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -42,18 +42,13 @@ import java.util.concurrent.TimeUnit;
 public class UserServiceImpl implements UserService {
 
     @Resource
-    private UserDOMapper userDOMapper;
-    @Resource
-    private RoleDOMapper roleDOMapper;
-    @Resource
     private PasswordEncoder passwordEncoder;
-    @Resource
-    private UserRoleRelDOMapper userRoleRelDOMapper;
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
     @Resource
     private TransactionTemplate transactionTemplate;
-
+    @Resource
+    private UserRpcService userRpcService;
     /**
      * 用户登录注册入口
      */
@@ -91,8 +86,7 @@ public class UserServiceImpl implements UserService {
         if (!Strings.CS.equals(code, sentCode)) {
             throw new BizException(ResponseCodeEnum.VERIFICATION_CODE_ERROR);
         }
-
-        UserDO userDO = userDOMapper.selectByPhone(phone);
+        UserDO userDO = userRpcService.selectByPhone(phone);
         if (Objects.isNull(userDO)) {
             // 未注册则走自动注册流程
             return registerUser(phone);
@@ -107,7 +101,7 @@ public class UserServiceImpl implements UserService {
      * 处理：密码登录
      */
     private Long handlePasswordLogin(UserLoginReqVO vo) {
-        UserDO userDO = userDOMapper.selectByPhone(vo.phone());
+        UserDO userDO = userRpcService.selectByPhone(vo.phone());
         if (Objects.isNull(userDO)) {
             throw new BizException(ResponseCodeEnum.USER_NOT_FOUND);
         }
@@ -134,8 +128,8 @@ public class UserServiceImpl implements UserService {
         }
 
         log.info("==> 开始同步用户角色至 Redis, userId: {}", userId);
-        List<Long> roleIdList = userRoleRelDOMapper.selectByUserId(userId);
-        List<String> roleKeyList = roleDOMapper.selectRoleKeyListByIdList(roleIdList);
+        List<Long> roleIdList = userRpcService.selectUserRoleRelByUserId(userId);
+        List<String> roleKeyList = userRpcService.selectRoleKeyListByIdList(roleIdList);
 
         // 写入缓存并设置 TTL (24小时)
         redisTemplate.opsForValue().set(userRolesKey, JsonUtils.toJsonString(roleKeyList), 24, TimeUnit.HOURS);
@@ -160,7 +154,8 @@ public class UserServiceImpl implements UserService {
                         .updateTime(LocalDateTime.now())
                         .deleted(DeletedEnum.NO.getValue())
                         .build();
-                userDOMapper.insert(userDO);
+                // 这个也是
+                userRpcService.insertUser(userDO);
                 Long userId = userDO.getId();
 
                 // 3. 绑定默认角色
@@ -171,10 +166,11 @@ public class UserServiceImpl implements UserService {
                         .updateTime(LocalDateTime.now())
                         .deleted(DeletedEnum.NO.getValue())
                         .build();
-                userRoleRelDOMapper.insert(userRoleDO);
+                // 这个也是
+                userRpcService.insertUserRoleRel(userRoleDO);
 
                 // 4. 立即同步角色到 Redis
-                RoleDO roleDO = roleDOMapper.selectByPrimaryKey(RoleConstants.COMMON_USER_ROLE_ID);
+                RoleDO roleDO = userRpcService.selectByPrimaryKey(RoleConstants.COMMON_USER_ROLE_ID);
                 List<String> roles = List.of(roleDO.getRoleKey());
                 redisTemplate.opsForValue().set(RedisKeyConstants.buildUserRoleKey(String.valueOf(userId)),
                         JsonUtils.toJsonString(roles), 24, TimeUnit.HOURS);

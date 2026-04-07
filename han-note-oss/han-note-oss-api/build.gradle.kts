@@ -14,4 +14,6 @@ dependencies {
     implementation(project(":framework:common"))
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     implementation("org.springframework.cloud:spring-cloud-starter-loadbalancer")
+
+
 }

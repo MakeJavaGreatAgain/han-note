@@ -23,6 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-config")
     implementation("com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1")
     runtimeOnly("org.postgresql:postgresql")
 
@@ -39,8 +40,12 @@ dependencies {
 
     // rpc
     implementation(project(":han-note-oss:han-note-oss-api"))
-
+    // Sa-Token
+    implementation("cn.dev33:sa-token-spring-boot4-starter")
+    implementation("cn.dev33:sa-token-redis-template")
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1")
+
+
 }
