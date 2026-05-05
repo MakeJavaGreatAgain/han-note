@@ -10,7 +10,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
  * @author hanserwei
  */
 @SpringBootApplication
-@MapperScan("com.hanserwei.hannote.auth.domain.mapper")
+@MapperScan({
+        "com.hanserwei.hannote.auth.domain.mapper",
+        "com.hanserwei.hannote.user.biz.domain.mapper"
+})
 @EnableConfigurationProperties({AliyunAccessKeyProperties.class})
 public class HannoteAuthApplication {
     public static void main(String[] args) {

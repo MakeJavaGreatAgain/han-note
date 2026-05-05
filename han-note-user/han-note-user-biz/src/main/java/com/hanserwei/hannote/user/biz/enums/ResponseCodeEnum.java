@@ -23,6 +23,8 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     INTRODUCTION_VALID_FAIL("USER-20004", "个人简介请设置1-100个字符"),
     UPLOAD_AVATAR_FAIL("USER-20005", "头像上传失败"),
     UPLOAD_BACKGROUND_IMG_FAIL("USER-20006", "背景图上传失败"),
+    VERIFICATION_CODE_EXPIRED("AUTH-20005", "验证码已过期"),
+    VERIFICATION_CODE_ERROR("AUTH-20001", "验证码错误"),
     ;
 
     /**

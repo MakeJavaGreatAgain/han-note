@@ -31,4 +31,23 @@
         </set>
         where id = #{id,jdbcType=BIGINT}
     </update>
+    <select id="selectByPhone" resultType="com.hanserwei.hannote.user.biz.domain.dataobject.UserDO">
+        select id, password
+        from t_user
+        where phone = #{phone}
+    </select>
+
+    <insert id="insert" parameterType="com.hanserwei.hannote.user.biz.domain.dataobject.UserDO" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into t_user (hannote_id, password,
+                            nickname, avatar, birthday,
+                            background_img, phone, sex,
+                            status, introduction, create_time,
+                            update_time, deleted)
+        values (#{hannoteId,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
+                #{nickname,jdbcType=VARCHAR}, #{avatar,jdbcType=VARCHAR}, #{birthday,jdbcType=DATE},
+                #{backgroundImg,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{sex,jdbcType=TINYINT},
+                #{status,jdbcType=TINYINT}, #{introduction,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+                #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BOOLEAN})
+    </insert>
 </mapper>

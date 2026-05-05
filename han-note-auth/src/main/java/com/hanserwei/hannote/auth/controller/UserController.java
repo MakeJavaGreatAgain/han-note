@@ -3,7 +3,6 @@ package com.hanserwei.hannote.auth.controller;
 import com.hanserwei.framework.biz.operationlog.aspect.ApiOperationLog;
 import com.hanserwei.framework.response.Response;
 import com.hanserwei.hannote.auth.alarm.AlarmInterface;
-import com.hanserwei.hannote.auth.model.vo.user.UpdatePasswordReqVO;
 import com.hanserwei.hannote.auth.model.vo.user.UserLoginReqVO;
 import com.hanserwei.hannote.auth.service.UserService;
 import jakarta.annotation.Resource;
@@ -43,10 +42,6 @@ public class UserController {
         return userService.logout();
     }
 
-    @PostMapping("/password/update")
-    @ApiOperationLog(description = "修改密码")
-    public Response<?> updatePassword(@Validated @RequestBody UpdatePasswordReqVO updatePasswordReqVO) {
-        return userService.updatePassword(updatePasswordReqVO);
-    }
+
 
 }
